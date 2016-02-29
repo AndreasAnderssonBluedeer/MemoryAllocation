@@ -1,5 +1,7 @@
 package memory;
 
+
+
 /**
  * This memory model allocates memory cells based on the first-fit method. 
  * 
@@ -7,6 +9,9 @@ package memory;
  * @since 1.0
  */
 public class FirstFit extends Memory {
+	private int[] cells;
+	private Pointer pointer;
+	private int size;
 
 	/**
 	 * Initializes an instance of a first fit-based memory.
@@ -15,6 +20,11 @@ public class FirstFit extends Memory {
 	 */
 	public FirstFit(int size) {
 		super(size);
+		this.size=size;
+		pointer=new Pointer(this);
+
+		cells=pointer.read(size);
+
 		// TODO Implement this!
 	}
 
@@ -37,6 +47,7 @@ public class FirstFit extends Memory {
 	 */
 	@Override
 	public void release(Pointer p) {
+		// Call compact after release?!
 		// TODO Implement this!
 	}
 	

@@ -1,4 +1,4 @@
-package memory;
+ package memory;
 
 /**
  * A simple class representing a pointer. It points to a specific address in
