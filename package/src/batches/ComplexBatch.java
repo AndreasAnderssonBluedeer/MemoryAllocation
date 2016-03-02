@@ -1,5 +1,6 @@
 package batches;
 
+import memory.BestFit;
 import memory.FirstFit;
 import memory.Memory;
 import memory.Pointer;
@@ -23,6 +24,7 @@ public class ComplexBatch {
 
 	public void run() {
 		Memory m = new FirstFit(1000); // Swap this for  your own implementation
+//		Memory m = new BestFit(1000);
 		Pointer[] ps = new Pointer[20];
 		
 		ps[0] = m.alloc(100);

@@ -9,6 +9,7 @@ import java.util.*;
  * @author "Johan Holmberg, Malmö university"
  * @since 1.0
  */
+@SuppressWarnings("Duplicates")
 public class FirstFit extends Memory {
 	private int[] cells;
 	private boolean[] statusArray;
@@ -24,9 +25,10 @@ public class FirstFit extends Memory {
 	public FirstFit(int size) {
 		super(size);
 		this.cellSize =size;
+		//Init Variables
 		statusArray=new boolean[cellSize];
 		pointer=new Pointer(this);
-		pointer.pointAt(0);	//Set start-address
+		pointer.pointAt(0);
 		allocPointers=new HashMap<>(cellSize);
 		updatedPointers=new HashMap<>(cellSize);
 		}
@@ -48,7 +50,7 @@ public class FirstFit extends Memory {
 			p=tryAlloc(size);
 
 		}
-		//Still not possible, print error- Memory's full.
+		//Still not possible, print error- Memory's full and fill the remaining memory.
 		if (p==null){
 			System.err.println("FIRST-FIT:alloc: MEMORY FULL!");
 			int count=cellSize-1;
@@ -75,7 +77,7 @@ public class FirstFit extends Memory {
 		cells=pointer.read(cellSize);
 		int counter=0;
 		for (int i = 0; i<cellSize; i++){
-			if (!statusArray[i]){
+			if (!statusArray[i]){	//If memory-position isnt used
 				counter++;
 				if(counter==size){
 					Pointer p=new Pointer(i-(size-1),this);
@@ -100,23 +102,25 @@ public class FirstFit extends Memory {
 	@Override
 	public void release(Pointer p) {
 		System.out.println("Release");
-		int blockSize=allocPointers.get(p.pointsAt());
-		int[] blockValues=new int [blockSize];
 
-		//Om defragmentering är gjord, hämta den nya adressen.
-		if(updatedPointers.containsKey(p.pointsAt())){
-			pointer.pointAt(updatedPointers.get(p.pointsAt()));
-			updatedPointers.remove(p.pointsAt());
+		if(allocPointers.containsKey(p.pointsAt())) {
+			int blockSize = allocPointers.get(p.pointsAt());
+			int[] blockValues = new int[blockSize];
+
+			//If compact/Defragmentation is performed- get updated key.
+			if (updatedPointers.containsKey(p.pointsAt())) {
+				pointer.pointAt(updatedPointers.get(p.pointsAt()));
+				updatedPointers.remove(p.pointsAt());
+			}
+			//Else, get standard key.
+			else {
+				pointer.pointAt(p.pointsAt());
+				allocPointers.remove(p.pointsAt());
+			}
+			writeStatus(pointer.pointsAt(), blockSize, false);
+			pointer.write(blockValues);
+
 		}
-		//Annars hämta den vanliga.
-		else{
-			pointer.pointAt(p.pointsAt());
-			allocPointers.remove(p.pointsAt());
-		}
-		writeStatus(pointer.pointsAt(),blockSize,false);
-		pointer.write(blockValues);
-
-
 
 
 
@@ -130,11 +134,13 @@ public class FirstFit extends Memory {
 	 * |  151 -  999 | Allocated
 	 * | 1000 - 1024 | Free
 	 */
+	@SuppressWarnings("Duplicates")
 	@Override
 	public void printLayout() {
 		System.out.println();
 		pointer.pointAt(0);
 		cells=pointer.read(cellSize);
+		//Print Memory
 		for (int i=0;i<cellSize;i++){
 			boolean allocated=true,free=true;
 			if(!statusArray[i]){
@@ -170,45 +176,44 @@ public class FirstFit extends Memory {
 	}
 	
 	/**
-	 * Compacts the memory space.
+	 * Compacts/Defragment the memory space.
 	 */
-	public void compact() {	//==Defragmentation
-		//Samla allt ledigt minne till ett stort, innebär även att samla de
-		//olika allokeringarna, dvs måste ändra pointers.
+	public void compact() {
 		statusArray=new boolean[cellSize];
 
 		System.out.println("DEFRAGMENTATION");
 		pointer.pointAt(0);//?
-		cells=pointer.read(cellSize);	//Hämta listan
-		int[] newCells=new int[cellSize];	//skapa en ny lista.
+		cells=pointer.read(cellSize);
+		int[] newCells=new int[cellSize];	//create new list/memory
 
-		//Hämta alla nycklar och värden
+		//Get all keys and values
 		Set<Map.Entry<Integer, Integer>> info=allocPointers.entrySet();
 		Object[] entryArray=info.toArray();
 		int position=0;
 
-		//Initiera den temporära hashmapen med Key/Values
+		//Update pointers
 		for( int i=0;i<entryArray.length;i++){
 			Map.Entry<Integer,Integer> temp = (Map.Entry<Integer, Integer>) entryArray[i];
-			//nyckel=pointerAdress i allocPointers, Value= position/adress
-			// i newCells som blir cells sen.
 			updatedPointers.put(temp.getKey(),position);
-			//Loopa så långt som adressen anger.
 			for (int k=0;k<temp.getValue();k++){
-				//Ge de nya cellerna värdet från adressen med samma nyckel.
 				writeStatus(position,1,true);
 				newCells[position++]=cells[temp.getKey()+k];
-
 			}
-
 		}
 		pointer.pointAt(0);
 		pointer.write(newCells);
 
 
 	}
-	public void writeStatus(int start,int length,boolean status){
 
+	/**
+	 * Writes a Boolean[] with statuses in comparison to allocated/free memory.
+	 *
+	 * @param start Start position in memory
+	 * @param length Memory block length
+	 * @param status True=Allocated, False=Free
+     */
+	public void writeStatus(int start,int length,boolean status){
 		for (int i=start;i<(start+length);i++){
 			statusArray[i]=status;
 		}

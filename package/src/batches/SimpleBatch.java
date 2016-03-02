@@ -24,14 +24,10 @@ public class SimpleBatch {
 
 	public void run() {
 		Memory m = new FirstFit(100); // Swap this for  your own implementation
-		//Memory m = new BestFit(100); // Swap this for  your own implementation
+//		Memory m = new BestFit(100); // Swap this for  your own implementation
 
 		Pointer p1, p2, p3, p4, p5, p6;
-		//Minnescell>0 == allokerat
-		//Ledigt minne == 0
-		//Försöker hitta minnesutrymme 20, får tillbaka pointer för minnesadress
 		p1 = m.alloc(20);
-		//Range returnerar int[] mellan range, pointer skriver mot adressen,[].length
 		p1.write(range(1, 20));
 		p2 = m.alloc(5);
 		p2.write(range(38, 42));
